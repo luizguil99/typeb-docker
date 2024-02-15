@@ -1,0 +1,80 @@
+{
+    "user_profile": {
+        "triggerForList": {
+            "status": "Desativado",
+            "interval": [
+                {
+                    "label": "Randomico",
+                    "value": "Randomico"
+                },
+                {
+                    "label": "Fixo",
+                    "value": "Fixo"
+                }
+            ],
+            "typeOfShot": [
+                {
+                    "label": "Randomico (Todas)",
+                    "value": "Randomico"
+                },
+                {
+                    "label": "Fixo",
+                    "value": "Fixo"
+                }
+            ],
+            "messageType": [
+                {
+                    "label": "Mensagem",
+                    "value": "Mensagem"
+                },
+                {
+                    "label": "Fluxo do Typebot",
+                    "value": "Fluxo"
+                }
+            ],
+            "typebot": "",
+            "labelIntervalSelected": "",
+            "labelTypeOfShot": "",
+            "labelMessageType": "",
+            "intervalSelected": "10",
+            "messagesSelected": [],
+            "lineSelected": ""
+        },
+        "triggerForEventos": {
+            "status": "Desativado",
+            "interval": [
+                {
+                    "label": "Randomico",
+                    "value": "Randomico"
+                },
+                {
+                    "label": "Fixo",
+                    "value": "Fixo"
+                }
+            ],
+            "typeOfShot": [
+                {
+                    "label": "Randomico",
+                    "value": "Randomico"
+                },
+                {
+                    "label": "Fixo",
+                    "value": "Fixo"
+                }
+            ],
+            "EvntType": [
+                {
+                    "label": "{vazio}",
+                    "value": "{vazio}"
+                }
+            ],
+            "labelIntervalSelected": "",
+            "labelTypeOfShot": "",
+            "labelMessageType": "",
+            "intervalSelected": "",
+            "events": [],
+            "lineSelected": ""
+        },
+        "messages": []
+    }
+}
