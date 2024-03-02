@@ -917,6 +917,110 @@ app.post('/update-messages', async (req, res) => {
   }
 });
 
+// Rota para adicionar mensagens ao perfil do usuário
+app.post('/update-events', async (req, res) => {
+  try {
+    const { jwt: token, events } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o perfil do usuário
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('user_profile')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Atualizar o array de mensagens no perfil do usuário
+    const updatedUserProfile = {
+      ...userData[0].user_profile,
+      events: events, // Aqui é o evento que está sendo atualizado
+      triggerForEventos: events // Corrigindo a referência aqui para events
+    };
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ user_profile: updatedUserProfile })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Eventos atualizadas com sucesso' });
+  } catch (error) {
+    console.error('Erro ao adicionar mensagens:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Rota para adicionar mensagens ao perfil do usuário
+app.post('/update-openingHours', async (req, res) => {
+  try {
+    const { jwt: token, data } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o perfil do usuário
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('user_profile')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ opening_hours: data })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Opening_hours atualizadas com sucesso' });
+  } catch (error) {
+    console.error('Erro ao adicionar opening_hours:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Endpoint para pesquisa de perfil de usuário
+app.post('/search-openingHours', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('opening_hours')
+      .eq('id', decodedToken.userId);
+
+
+
+    if (users) {
+      res.status(200).json( users[0].opening_hours );
+    } else {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+
+
+  } catch (error) {
+    console.error('Erro na pesquisa de perfil:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+
 app.listen(port, () => {
   console.log(`Servidor principal rodando na porta ${port}`);
 });
