@@ -3,7 +3,7 @@ version: "3.7"
 services:
   typebot_builder:
     ports:
-      - 4000:3000
+      - 4001:3000
     image: baptistearno/typebot-builder:2.20.0
     environment:
       - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
@@ -30,10 +30,9 @@ services:
       - S3_BUCKET=typebot
       - S3_ENDPOINT=db.fluxosmm.com
 
-
   typebot_viewer:
     ports:
-      - 4001:3000
+      - 4002:3000
     image: baptistearno/typebot-viewer:2.20.0
     environment:
       - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
@@ -51,19 +50,4 @@ services:
       - S3_BUCKET=typebot
       - S3_ENDPOINT=db.fluxosmm.com
 
-
-  minio:
-    image: quay.io/minio/minio
-    command: server /data --console-address ":9001"
-    volumes:
-      - minio_data:/data
-    environment:
-      - MINIO_ROOT_USER=admin
-      - MINIO_ROOT_PASSWORD=Mfcd62KKxTr!!Mfcd62!!
-      - MINIO_BROWSER_REDIRECT_URL=https://s3.fluxosmm.com
-      - MINIO_SERVER_URL=https://db.fluxosmm.com
-  
-volumes:
-  minio_data:
-  db_data:
 
