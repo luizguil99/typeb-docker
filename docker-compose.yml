@@ -1,22 +1,12 @@
 version: "3.7"
 
 services:
-  typebot-db:
-    image: postgres:13
-    ports:
-      - 5432:5432
-    volumes:
-      - db_data:/var/lib/postgresql/data
-    environment:
-      - POSTGRES_DB=typebot
-      - POSTGRES_PASSWORD=typebot
-
   typebot_builder:
     ports:
       - 4000:3000
     image: baptistearno/typebot-builder:2.20.0
     environment:
-      - DATABASE_URL=postgresql://postgres:typebot@typebot-db:5432/typebot
+      - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
       - ENCRYPTION_SECRET=7/l2NKGhkMUHRV0dt/g8hD2YNopCrAeH
       - DEFAULT_WORKSPACE_PLAN=UNLIMITED
       - NEXTAUTH_URL=https://typebot.fluxosmm.com
@@ -46,7 +36,7 @@ services:
       - 4001:3000
     image: baptistearno/typebot-viewer:2.20.0
     environment:
-      - DATABASE_URL=postgresql://postgres:typebot@typebot-db:5432/typebot
+      - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
       - ENCRYPTION_SECRET=7/l2NKGhkMUHRV0dt/g8hD2YNopCrAeH
       - DEFAULT_WORKSPACE_PLAN=UNLIMITED
       - NEXTAUTH_URL=https://typebot.fluxosmm.com
