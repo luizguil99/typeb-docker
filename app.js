@@ -800,6 +800,7 @@ app.post('/add-instance', async (req, res) => {
     const axiosBody = {
       instanceName: instanceNameEvolution,
       token: '', // Coloque o token correto aqui
+      integration: "WHATSAPP-BAILEYS",
       qrcode: true
     };
 
@@ -1015,6 +1016,328 @@ app.post('/search-openingHours', async (req, res) => {
 
   } catch (error) {
     console.error('Erro na pesquisa de perfil:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Endpoint para pesquisa de perfil de usuário
+app.post('/search-profile-triggerLeads', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads')
+      .eq('id', decodedToken.userId);
+
+
+
+    if (!users || users.length === 0 || users[0].profile_TriggerLeads === null) {
+
+      return res.status(200).json("Perfil não encontrado");
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json(users[0].profile_TriggerLeads);
+  } catch (error) {
+    console.error('Erro na pesquisa de perfil:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+// Rota para salvar eventos dentro de triggerForEventos.events
+app.post('/add-profile-messages', async (req, res) => {
+  try {
+    const { jwt: token, message } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_messages')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Atualizar o perfil do usuário com os eventos adicionados
+    const messagesArray = userData[0].profile_messages;
+
+    console.log(messagesArray)
+
+    const existingMessage = messagesArray.find(item => item.name === message.name);
+
+    if (existingMessage) {
+      return res.status(400).json({ message: 'Já existe uma mensagem com esse nome' });
+    }
+
+    messagesArray.push(message);
+  
+  // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_messages: messagesArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Mensagens salvos com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar Mensagens:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Rota para remover eventos dentro de triggerForEventos.events
+app.delete('/remove-profile-message', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { name } = req.query;
+
+    //console.log(name)
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_messages')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Obter o array de mensagens do usuário
+    const messagesArray = userData[0].profile_messages;
+
+    // Encontrar o índice da mensagem com o nome fornecido
+    const index = messagesArray.findIndex(item => item.name === name);
+
+    if (index === -1) {
+      return res.status(404).json({ message: 'Mensagem não encontrada' });
+    }
+
+    // Remover a mensagem do array
+    messagesArray.splice(index, 1);
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_messages: messagesArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Mensagem removida com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover mensagem:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/get-messages', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('profile_messages')
+      .eq('id', decodedToken.userId);
+
+
+
+    if (!users || users.length === 0 || users[0].profile_messages === null) {
+
+      return res.status(200).json("Menssagens não encontrado");
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json(users[0].profile_messages);
+  } catch (error) {
+    console.error('Erro na pesquisa de menssagen:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Rota para salvar eventos dentro de triggerForEventos.events
+app.post('/add-profile-rule', async (req, res) => {
+  try {
+    const { jwt: token, rule } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads_rules')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Atualizar o perfil do usuário com os eventos adicionados
+    const rulesArray = userData[0].profile_TriggerLeads_rules;
+
+    //console.log(rulesArray)
+
+    const existingRule = rulesArray.find(item => item.name === rule.name);
+
+    if (existingRule) {
+      return res.status(400).json({ message: 'Já existe uma regra com esse nome' });
+    }
+
+    rulesArray.push(rule);
+  
+  // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_TriggerLeads_rules: rulesArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Regra salvos com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar regra:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+// Rota para remover eventos dentro de triggerForEventos.events
+app.delete('/remove-profile-rule', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { name } = req.query;
+
+    //console.log(name)
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads_rules')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Obter o array de mensagens do usuário
+    const rulesArray = userData[0].profile_TriggerLeads_rules;
+
+    // Encontrar o índice da mensagem com o nome fornecido
+    const index = rulesArray.findIndex(item => item.name === name);
+
+    if (index === -1) {
+      return res.status(404).json({ message: 'Mensagem não encontrada' });
+    }
+
+    // Remover a mensagem do array
+    rulesArray.splice(index, 1);
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_TriggerLeads_rules: rulesArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Regras removida com sucesso' });
+  } catch (error) {
+    console.error('Erro ao remover regra:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/get-rules', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads_rules')
+      .eq('id', decodedToken.userId);
+
+
+
+    if (!users || users.length === 0 || users[0].profile_TriggerLeads_rules === null) {
+
+      return res.status(200).json("Regras não encontrado");
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json(users[0].profile_TriggerLeads_rules);
+  } catch (error) {
+    console.error('Erro na pesquisa de menssagen:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/update-profile_TriggerLeads', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { typeInterval, interval, typeTrigger, line, message, rule } = req.query;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Obter o array de mensagens do usuário
+    const profileArray = userData[0].profile_TriggerLeads;
+
+    // Deserializar messageSelected se for uma string
+    const messageArray = Array.isArray(message) ? message.map(JSON.parse) : JSON.parse(message);
+
+    // Atualizar as propriedades com os valores recebidos da requisição
+    profileArray.Profile.typeIntervalSelected = typeInterval;
+    profileArray.Profile.intervalSelected = interval;
+    profileArray.Profile.typeTriggerSelected = typeTrigger;
+    profileArray.Profile.lineSelected = line;
+    profileArray.Profile.messageSelected = messageArray;
+    profileArray.Profile.ruleSelected = rule;
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_TriggerLeads: profileArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Configurações salvas com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar configurações:', error);
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });

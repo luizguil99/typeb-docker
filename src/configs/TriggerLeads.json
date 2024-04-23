@@ -1,0 +1,40 @@
+{
+    "status": "Desativado",
+    "Inputs": {
+        "intervalType": [
+            {
+                "label": "Randomico",
+                "value": "Randomico"
+            },
+            {
+                "label": "Fixo",
+                "value": "Fixo"
+            }
+        ],
+        "triggerType": [
+            {
+                "label": "Randomico",
+                "value": "Randomico"
+            },
+            {
+                "label": "Fixo",
+                "value": "Fixo"
+            }
+        ]
+    },
+    "Profile": {
+        "typeIntervalSelected": "",
+        "intervalSelected": "",
+        "typeTriggerSelected": "",
+        "lineSelected": "",
+        "messageSelected": [],
+        "ruleSelected": ""
+    },
+    "System": {
+        "lastLine": null,
+        "countErros": 0,
+        "Status": "Desativado",
+        "lastTrigger": "",
+        "codeTrigger": ""
+    }
+}
