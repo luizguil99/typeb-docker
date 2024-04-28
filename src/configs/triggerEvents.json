@@ -1,0 +1,26 @@
+{
+    "Inputs": {
+        "typeOfShot": [
+            {
+                "label": "Randomico",
+                "value": "Randomico"
+            },
+            {
+                "label": "Fixo",
+                "value": "Fixo"
+            }
+        ]
+    },
+    "Profile": {
+        "typeTriggerSelected": "",
+        "lineSelected": "",
+        "messageSelected": []
+    },
+    "System": {
+        "lastLine": null,
+        "countErros": 0,
+        "status": "Desativado",
+        "lastTrigger": "2024-04-26T18:55:09+02:00",
+        "codeTrigger": ""
+    }
+}

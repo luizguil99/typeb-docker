@@ -21,7 +21,41 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 app.use(bodyParser.json());
 
-// Endpoint para registro de usuário
+
+
+
+function translateLogs(logs, excludedColumns = []) {
+  const translations = {
+    "message_id": "ID da Mensagem",
+    "user_id": "ID do Usuário",
+    "created_at": "Criado em",
+    "trigger_time": "Tempo de Acionamento",
+    "name": "Nome",
+    "telephone": "Telefone",
+    "trigger_status": "Status do Disparo",
+    "error": "Erro",
+    "content_error": "Conteúdo do Erro",
+    "content_message": "Mensagem",
+    "shipping_time": "Eviado em",
+    "typeTrigger": "Tipo de Disparo"
+    // Adicione mais traduções conforme necessário
+  };
+
+  return logs.map(log => {
+    const translatedLog = {};
+    Object.keys(log).forEach(key => {
+      if (!excludedColumns.includes(key)) {
+        translatedLog[translations[key] || key] = log[key];
+      }
+    });
+    return translatedLog;
+  });
+}
+
+
+//------------- ROTAS DO APP-------------\\
+
+
 app.post('/register', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -55,7 +89,6 @@ app.post('/register', async (req, res) => {
   }
 });
 
-// Endpoint para login de usuário
 app.post('/login', async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -86,69 +119,6 @@ app.post('/login', async (req, res) => {
     res.status(200).json({ token });
   } catch (error) {
     console.error('Erro no login:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
-
-// Endpoint para pesquisa de perfil de usuário
-app.post('/search-profile', async (req, res) => {
-  try {
-    const { jwt: token } = req.body;
-
-
-
-    // Verificar se o token é válido
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-
-    // Obter usuário pelo ID do token
-    const { data: users } = await supabase
-      .from('dp-v2-users')
-      .select('user_profile')
-      .eq('id', decodedToken.userId);
-
-
-
-    if (!users || users.length === 0 || users[0].user_profile === null) {
-
-
-      // Se o usuário não tem perfil, retorna o conteúdo do arquivo data.json
-      const jsonData = await fs.readFile('src/configs/data.json', 'utf8');
-      const jsonDataParsed = JSON.parse(jsonData);
-      return res.status(200).json(jsonDataParsed);
-    }
-
-    // Se o usuário tem perfil, retorna o valor da coluna user_profile
-    res.status(200).json({ user_profile: users[0].user_profile });
-  } catch (error) {
-    console.error('Erro na pesquisa de perfil:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
-
-// Endpoint para atualizar o perfil de usuário
-app.post('/update-profile', async (req, res) => {
-  try {
-    const { jwt: token, profile } = req.body;
-
-
-    // Verificar se o token é válido
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Atualizar o perfil do usuário no banco de dados
-    const { data: updatedUser, error } = await supabase
-      .from('dp-v2-users')
-      .update({ user_profile: profile })
-      .eq('id', decodedToken.userId);
-
-    if (error) {
-      throw error;
-    }
-
-
-    res.status(200).json({ message: 'Perfil atualizado com sucesso' });
-  } catch (error) {
-    console.error('Erro ao atualizar perfil:', error);
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
@@ -212,82 +182,6 @@ app.post('/search-lines', async (req, res) => {
   }
 });
 
-app.post('/upload-file', async (req, res) => {
-  try {
-    const { jwt: token, contacts } = req.body;
-
-    // Verificar se o token é válido
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Obter usuário pelo ID do token
-    const { data: user } = await supabase
-      .from('dp-v2-users')
-      .select('id')
-      .eq('id', decodedToken.userId);
-
-    if (!user || user.length === 0) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
-
-    const userId = user[0].id;
-
-    // Gerar ID aleatório de 55 caracteres
-    const uploadTag = crypto.randomBytes(28).toString('hex');
-
-    // Mapear a lista de contatos para o formato desejado
-    const formattedContacts = contacts.slice(1).map(contact => {
-      return {
-        user_id: userId,
-        name: contact[0],
-        telephone: contact[1],
-        upload_tag: uploadTag  // Adiciona o upload_tag
-      };
-    });
-
-    // Inserir a lista de contatos na tabela dp-v2-trigger
-    const { data: insertedContacts, error } = await supabase
-      .from('dp-v2-trigger')
-      .insert(formattedContacts);
-
-    if (error) {
-      throw error;
-    }
-
-    res.status(200).json({ message: 'Lista de contatos salva com sucesso' });
-  } catch (error) {
-    console.error('Erro ao salvar lista de contatos:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
-
-function translateLogs(logs, excludedColumns = []) {
-  const translations = {
-    "message_id": "ID da Mensagem",
-    "user_id": "ID do Usuário",
-    "created_at": "Criado em",
-    "trigger_time": "Tempo de Acionamento",
-    "name": "Nome",
-    "telephone": "Telefone",
-    "trigger_status": "Status do Disparo",
-    "error": "Erro",
-    "content_error": "Conteúdo do Erro",
-    "content_message": "Mensagem",
-    "shipping_time": "Eviado em",
-    "typeTrigger": "Tipo de Disparo"
-    // Adicione mais traduções conforme necessário
-  };
-
-  return logs.map(log => {
-    const translatedLog = {};
-    Object.keys(log).forEach(key => {
-      if (!excludedColumns.includes(key)) {
-        translatedLog[translations[key] || key] = log[key];
-      }
-    });
-    return translatedLog;
-  });
-}
-
 app.post('/get-logs', async (req, res) => {
   try {
     const { jwt: token } = req.body;
@@ -316,85 +210,341 @@ app.post('/get-logs', async (req, res) => {
   }
 });
 
-// Rota para iniciar o trigger
-app.post('/start-triggerForList', async (req, res) => {
+app.post('/get-messages', async (req, res) => {
   try {
     const { jwt: token } = req.body;
+
+
 
     // Verificar se o token é válido
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Obter o usuário da tabela dp-v2-users pelo user_id
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('profile_messages')
+      .eq('id', decodedToken.userId);
+
+
+
+    if (!users || users.length === 0 || users[0].profile_messages === null) {
+
+      return res.status(200).json("Menssagens não encontrado");
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json(users[0].profile_messages);
+  } catch (error) {
+    console.error('Erro na pesquisa de menssagen:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+
+
+//------------- ROTAS DE TRIGGER LIST -------------\\
+
+app.post('/get-profile-trigger-list', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('*')
+      .eq('id', decodedToken.userId);
+
+    if (!users || users.length === 0 || users[0].profile_TriggerList === null) {
+
+      // Se o usuário não tem perfil, retorna o conteúdo do arquivo data.json
+      const jsonData = await fs.readFile('src/configs/triggerList.json', 'utf8');
+      const jsonDataParsed = JSON.parse(jsonData);
+      return res.status(200).json(jsonDataParsed);
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json( users[0].profile_TriggerList );
+  } catch (error) {
+    console.error('Erro na pesquisa de perfil:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/update-profile-list', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { typeInterval, interval, typeTrigger, line, message } = req.query;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
     const { data: userData } = await supabase
       .from('dp-v2-users')
-      .select('user_profile')
+      .select('*')
       .eq('id', decodedToken.userId);
 
     if (!userData || userData.length === 0) {
       return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
-    // Atualizar o status do triggerForList para "Ativado" dentro de user_profile
-    const updatedUserProfile = {
-      ...userData[0].user_profile,
-      triggerForList: {
-        ...userData[0].user_profile.triggerForList,
-        status: 'Ativado'
-      }
-    };
+    // Obter o array de mensagens do usuário
+    const profileArray = userData[0].profile_TriggerList;
+
+    // Deserializar messageSelected se for uma string
+    const messageArray = Array.isArray(message) ? message.map(JSON.parse) : JSON.parse(message);
+
+    // Atualizar as propriedades com os valores recebidos da requisição
+    profileArray.Profile.typeIntervalSelected = typeInterval;
+    profileArray.Profile.intervalSelected = interval;
+    profileArray.Profile.typeTriggerSelected = typeTrigger;
+    profileArray.Profile.lineSelected = line;
+    profileArray.Profile.messageSelected = messageArray;
 
     // Atualizar o registro no banco de dados
     await supabase
       .from('dp-v2-users')
-      .update({ user_profile: updatedUserProfile })
+      .update({ profile_TriggerList: profileArray })
       .eq('id', decodedToken.userId);
 
-    res.status(200).json({ message: 'Trigger iniciado com sucesso' });
+    res.status(200).json({ message: 'Configurações salvas com sucesso' });
   } catch (error) {
-    console.error('Erro ao iniciar o trigger:', error);
+    console.error('Erro ao salvar configurações:', error);
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
 
-// Rota para parar o trigger
-app.post('/stop-triggerForList', async (req, res) => {
+app.post('/activeOrDisable-profile-list', async (req, res) => {
   try {
-    const { jwt: token } = req.body;
+    const { jwt: token } = req.body
+    const { status } = req.query;
 
     // Verificar se o token é válido
     const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
 
-    // Obter o usuário da tabela dp-v2-users pelo user_id
+    // Obter o usuário do banco de dados pelo ID do token
     const { data: userData } = await supabase
       .from('dp-v2-users')
-      .select('user_profile')
+      .select('*')
       .eq('id', decodedToken.userId);
 
     if (!userData || userData.length === 0) {
       return res.status(404).json({ message: 'Usuário não encontrado' });
     }
 
-    // Atualizar o status do triggerForList para "Desativado" dentro de user_profile
-    const updatedUserProfile = {
-      ...userData[0].user_profile,
-      triggerForList: {
-        ...userData[0].user_profile.triggerForList,
-        status: 'Desativado'
-      }
-    };
+    // Obter o array de mensagens do usuário
+    const profileArray = userData[0].profile_TriggerList;
+
+    // Atualizar as propriedades com os valores recebidos da requisição
+    profileArray.System.status = status;
 
     // Atualizar o registro no banco de dados
     await supabase
       .from('dp-v2-users')
-      .update({ user_profile: updatedUserProfile })
+      .update({ profile_TriggerList: profileArray })
       .eq('id', decodedToken.userId);
 
-    res.status(200).json({ message: 'Trigger parado com sucesso' });
+    res.status(200).json({ message: 'Configurações salvas com sucesso' });
   } catch (error) {
-    console.error('Erro ao parar o trigger:', error);
+    console.error('Erro ao salvar configurações:', error);
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
+
+app.post('/upload-file', async (req, res) => {
+  try {
+    const { jwt: token, contacts } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter usuário pelo ID do token
+    const { data: user } = await supabase
+      .from('dp-v2-users')
+      .select('id')
+      .eq('id', decodedToken.userId);
+
+      //console.log(contacts)
+
+    if (!user || user.length === 0) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const userId = user[0].id;
+
+    // Gerar ID aleatório de 55 caracteres
+    const uploadTag = crypto.randomBytes(28).toString('hex');
+
+    // Mapear a lista de contatos para o formato desejado
+    const formattedContacts = contacts.slice(1).map(contact => {
+      const formattedContact = {
+        user_id: userId,
+        name: contact[0],
+        telephone: contact[1],
+        upload_tag: uploadTag, // Adiciona o upload_tag
+        variables: {} // Objeto para armazenar as variáveis
+      };
+
+      const headers = contacts[0]; // Cabeçalhos
+      // Salvando as variáveis na coluna 'variables'
+      for (let i = 2; i < contact.length; i++) {
+        formattedContact.variables[headers[i]] = contact[i] || "";
+      }
+
+      return formattedContact;
+    });
+
+    // Inserir a lista de contatos na tabela dp-v2-trigger
+    const { data: insertedContacts, error } = await supabase
+      .from('dp-v2-trigger')
+      .insert(formattedContacts);
+
+    if (error) {
+      throw error;
+    }
+
+    res.status(200).json({ message: 'Lista de contatos salva com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar lista de contatos:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/get-progress-profile-list', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter usuário pelo ID do token
+    const { data: user } = await supabase
+      .from('dp-v2-users')
+      .select('id')
+      .eq('id', decodedToken.userId);
+
+    if (!user || user.length === 0) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const userId = user[0].id;
+
+    // Contar os itens na tabela dp-v2-trigger
+    const { data: triggerCount } = await supabase
+      .from('dp-v2-trigger')
+      .select('count', { count: 'exact' })
+      .eq('user_id', userId)
+      .eq('typeTrigger', 'Disparador por Lista');
+
+    // Contar os itens na outra tabela
+    const { data: logsTableCount } = await supabase
+      .from('dp-v2-logs')
+      .select('count', { count: 'exact' })
+      .eq('owner_id', userId)
+      .eq('typeTrigger', 'Disparos por Lista');
+
+    res.status(200).json({
+      triggerCount: triggerCount[0].count,
+      logsTableCount: logsTableCount[0].count
+    });
+  } catch (error) {
+    console.error('Erro ao contar itens:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+
+
+//------------- ROTAS DE TRIGGER EVENTS -------------\\
+
+app.post('/get-profile-trigger-events', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+
+    // Obter usuário pelo ID do token
+    const { data: users } = await supabase
+      .from('dp-v2-users')
+      .select('*')
+      .eq('id', decodedToken.userId);
+
+    if (!users || users.length === 0 || users[0].profile_TriggerEvents === null) {
+
+      // Se o usuário não tem perfil, retorna o conteúdo do arquivo data.json
+      const jsonData = await fs.readFile('src/configs/triggerList.json', 'utf8');
+      const jsonDataParsed = JSON.parse(jsonData);
+      return res.status(200).json(jsonDataParsed);
+    }
+
+    // Se o usuário tem perfil, retorna o valor da coluna user_profile
+    res.status(200).json( users[0].profile_TriggerEvents );
+  } catch (error) {
+    console.error('Erro na pesquisa de perfil:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+app.post('/update-profile-events', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { typeInterval, interval, typeTrigger, line, message } = req.query;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('*')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Obter o array de mensagens do usuário
+    const profileArray = userData[0].profile_TriggerEvents;
+
+    // Deserializar messageSelected se for uma string
+    const messageArray = Array.isArray(message) ? message.map(JSON.parse) : JSON.parse(message);
+
+    // Atualizar as propriedades com os valores recebidos da requisição
+    profileArray.Profile.typeTriggerSelected = typeTrigger;
+    profileArray.Profile.lineSelected = line;
+    profileArray.Profile.messageSelected = messageArray;
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_TriggerEvents: profileArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Configurações salvas com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar configurações:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
+
+
+
 
 // Rota para iniciar o trigger
 app.post('/start-triggerForEvents', async (req, res) => {
@@ -476,48 +626,7 @@ app.post('/stop-triggerForEvents', async (req, res) => {
   }
 });
 
-app.post('/count-items', async (req, res) => {
-  try {
-    const { jwt: token } = req.body;
 
-    // Verificar se o token é válido
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-    // Obter usuário pelo ID do token
-    const { data: user } = await supabase
-      .from('dp-v2-users')
-      .select('id')
-      .eq('id', decodedToken.userId);
-
-    if (!user || user.length === 0) {
-      return res.status(401).json({ error: 'Usuário não encontrado' });
-    }
-
-    const userId = user[0].id;
-
-    // Contar os itens na tabela dp-v2-trigger
-    const { data: triggerCount } = await supabase
-      .from('dp-v2-trigger')
-      .select('count', { count: 'exact' })
-      .eq('user_id', userId)
-      .eq('typeTrigger', 'Disparador por Lista');
-
-    // Contar os itens na outra tabela
-    const { data: logsTableCount } = await supabase
-      .from('dp-v2-logs')
-      .select('count', { count: 'exact' })
-      .eq('user_id', userId)
-      .eq('typeTrigger', 'Disparador por Lista');
-
-    res.status(200).json({
-      triggerCount: triggerCount[0].count,
-      logsTableCount: logsTableCount[0].count
-    });
-  } catch (error) {
-    console.error('Erro ao contar itens:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
 
 app.post('/progress-events', async (req, res) => {
   try {
@@ -967,7 +1076,7 @@ app.post('/update-openingHours', async (req, res) => {
     // Obter o perfil do usuário
     const { data: userData } = await supabase
       .from('dp-v2-users')
-      .select('user_profile')
+      .select('*')
       .eq('id', decodedToken.userId);
 
     if (!userData || userData.length === 0) {
@@ -1144,36 +1253,7 @@ app.delete('/remove-profile-message', async (req, res) => {
   }
 });
 
-app.post('/get-messages', async (req, res) => {
-  try {
-    const { jwt: token } = req.body;
 
-
-
-    // Verificar se o token é válido
-    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
-
-
-    // Obter usuário pelo ID do token
-    const { data: users } = await supabase
-      .from('dp-v2-users')
-      .select('profile_messages')
-      .eq('id', decodedToken.userId);
-
-
-
-    if (!users || users.length === 0 || users[0].profile_messages === null) {
-
-      return res.status(200).json("Menssagens não encontrado");
-    }
-
-    // Se o usuário tem perfil, retorna o valor da coluna user_profile
-    res.status(200).json(users[0].profile_messages);
-  } catch (error) {
-    console.error('Erro na pesquisa de menssagen:', error);
-    res.status(500).json({ error: 'Erro interno no servidor' });
-  }
-});
 
 // Rota para salvar eventos dentro de triggerForEventos.events
 app.post('/add-profile-rule', async (req, res) => {
@@ -1341,6 +1421,91 @@ app.post('/update-profile_TriggerLeads', async (req, res) => {
     res.status(500).json({ error: 'Erro interno no servidor' });
   }
 });
+
+app.post('/activeOrDisable_TriggerLeads', async (req, res) => {
+  try {
+    const { jwt: token } = req.body
+    const { status } = req.query;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter o usuário do banco de dados pelo ID do token
+    const { data: userData } = await supabase
+      .from('dp-v2-users')
+      .select('profile_TriggerLeads')
+      .eq('id', decodedToken.userId);
+
+    if (!userData || userData.length === 0) {
+      return res.status(404).json({ message: 'Usuário não encontrado' });
+    }
+
+    // Obter o array de mensagens do usuário
+    const profileArray = userData[0].profile_TriggerLeads;
+
+    // Atualizar as propriedades com os valores recebidos da requisição
+    profileArray.System.status = status;
+
+    // Atualizar o registro no banco de dados
+    await supabase
+      .from('dp-v2-users')
+      .update({ profile_TriggerLeads: profileArray })
+      .eq('id', decodedToken.userId);
+
+    res.status(200).json({ message: 'Configurações salvas com sucesso' });
+  } catch (error) {
+    console.error('Erro ao salvar configurações:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+app.post('/get-progress-triggerLeads', async (req, res) => {
+  try {
+    const { jwt: token } = req.body;
+
+    // Verificar se o token é válido
+    const decodedToken = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Obter usuário pelo ID do token
+    const { data: user } = await supabase
+      .from('dp-v2-users')
+      .select('*')
+      .eq('id', decodedToken.userId);
+
+    if (!user || user.length === 0) {
+      return res.status(401).json({ error: 'Usuário não encontrado' });
+    }
+
+    const userId = user[0].id;
+
+    const codeTrigger = user[0].profile_TriggerLeads.System.codeTrigger
+    //console.log(codeTrigger)
+
+    // Contar os itens na outra tabela apenas com owner_id selecionados
+    const { data: onlyOwnerIdCount } = await supabase
+      .from('dp-v2-leads')
+      .select('count', { count: 'exact' })
+      .eq('owner_id', userId) // Verifica se last_code_trigger é null
+
+    // Contar os itens na outra tabela com owner_id e codeTrigger selecionados
+    const { data: ownerIdAndCodeTriggerCount } = await supabase
+      .from('dp-v2-leads')
+      .select('count', { count: 'exact' })
+      .eq('owner_id', userId)
+      .eq('last_code_trigger', codeTrigger);
+
+    res.status(200).json({
+      onlyOwnerIdCount: onlyOwnerIdCount[0].count,
+      ownerIdAndCodeTriggerCount: ownerIdAndCodeTriggerCount[0].count
+    });
+
+  } catch (error) {
+    console.error('Erro ao contar itens:', error);
+    res.status(500).json({ error: 'Erro interno no servidor' });
+  }
+});
+
+
 
 
 

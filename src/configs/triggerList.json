@@ -1,7 +1,6 @@
 {
-    "status": "Desativado",
     "Inputs": {
-        "intervalType": [
+        "interval": [
             {
                 "label": "Randomico",
                 "value": "Randomico"
@@ -11,9 +10,9 @@
                 "value": "Fixo"
             }
         ],
-        "triggerType": [
+        "typeOfShot": [
             {
-                "label": "Randomico",
+                "label": "Randomico (Todas)",
                 "value": "Randomico"
             },
             {
@@ -27,14 +26,13 @@
         "intervalSelected": "",
         "typeTriggerSelected": "",
         "lineSelected": "",
-        "messageSelected": [],
-        "ruleSelected": ""
+        "messageSelected": []
     },
     "System": {
         "lastLine": null,
         "countErros": 0,
-        "Status": "Desativado",
-        "lastTrigger": "",
+        "status": "Desativado",
+        "lastTrigger": "2024-04-26T18:55:09+02:00",
         "codeTrigger": ""
     }
 }
