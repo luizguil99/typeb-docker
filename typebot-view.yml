@@ -9,8 +9,8 @@ services:
       - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
       - ENCRYPTION_SECRET=7/l2NKGhkMUHRV0dt/g8hD2YNopCrAeH
       - DEFAULT_WORKSPACE_PLAN=UNLIMITED
-      - NEXTAUTH_URL=https://typebot.fluxosmm.com
-      - NEXT_PUBLIC_VIEWER_URL=https://chat.fluxosmm.com
+      - NEXTAUTH_URL=https://dash.fluxosmm.com
+      - NEXT_PUBLIC_VIEWER_URL=https://form.fluxosmm.com
       - NEXTAUTH_URL_INTERNAL=http://localhost:4000
       # Configurações do Typebot e Google Cloud
       - GOOGLE_CLIENT_ID=http://1057579664250-0qmbhq4tgkfk3u0cteggffamrsuek2ek.apps.googleusercontent.com
