@@ -3,7 +3,7 @@ version: "3.7"
 services:
   typebot_builder:
     ports:
-      - 4001:3000
+      - 7001:3000
     image: baptistearno/typebot-builder:2.22.2
     environment:
       - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
