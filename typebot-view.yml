@@ -4,7 +4,7 @@ services:
   typebot_viewer:
     ports:
       - 7002:3000
-    image: baptistearno/typebot-viewer:2.22.2
+    image: baptistearno/typebot-builder:latest
     environment:
       - DATABASE_URL=postgresql://postgres:typebot@clta0qrta00rhp7aufegvp3bm:5432/typebot
       - ENCRYPTION_SECRET=7/l2NKGhkMUHRV0dt/g8hD2YNopCrAeH
