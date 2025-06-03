@@ -6,7 +6,7 @@ services:
       - 7002:3000
     image: baptistearno/typebot-viewer:latest
     environment:
-      - DATABASE_URL=postgres://postgres:qZNgseR8YCe6KHQUE3cobyo3l1pyUj7PUtJX9hfsai95HgGJ2Jp4Npt1wCDeu3O9@fos4g84ksokgkks8gkwg4kgw:5432/postgres
+      - DATABASE_URL=postgres://postgres:qZNgseR8YCe6KHQUE3cobyo3l1pyUj7PUtJX9hfsai95HgGJ2Jp4Npt1wCDeu3O9@postgres:5432/postgres
       - ENCRYPTION_SECRET=7/l2NKGhkMUHRV0dt/g8hD2YNopCrAeH
       - DEFAULT_WORKSPACE_PLAN=UNLIMITED
       - NEXTAUTH_URL=https://proscale.fluxosmm.com
